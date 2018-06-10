@@ -7,12 +7,13 @@ import json
 # Create your views here.
 @csrf_exempt
 def compilecode(request):
-    import pdb; pdb.set_trace()
     with open('ccode.c','w+') as mycode:
         mycode.write(request.POST.get('code'))
-    Popen(["gcc","ccode.c"])
-    myvar = Popen(["./a.out"], stdout=PIPE)
-    output = myvar.communicate()[0]
-    print(output)
-    Popen(["rm","ccode.c"])
+    ccompile = Popen(["gcc","ccode.c"], stderr=PIPE)
+    ccompileerr = ccompile.communicate()[1].decode()
+    if ccompileerr != '':
+        return JsonResponse({"success": ccompileerr})
+    runoutput = Popen(["./a.out"], stdout=PIPE)
+    output = runoutput.communicate()[0]
+    call(["rm","ccode.c", "a.out"])
     return JsonResponse({"success": output.decode()})
